@@ -3,10 +3,55 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Hello Vue3!</title>
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
+    />
+    <title>Timer</title>
   </head>
+
   <body>
-    <div id="app">{{message}}</div>
+    <div id="app">
+      <div class="timer">00:00.000</div>
+
+      <div class="relative">
+        <div class="actions">
+          <button class="material-symbols-outlined" type="button">
+            pause_circle
+          </button>
+          <button class="material-symbols-outlined" type="button">
+            not_started
+          </button>
+          <button class="material-symbols-outlined" type="button">
+            stop_circle
+          </button>
+          <button class="material-symbols-outlined" type="button">
+            add_circle
+          </button>
+        </div>
+
+        <div class="list">
+          <ul class="divide-y">
+            <li class="inline-flex items-center">
+              <span class="mr-3">1.</span> 00:00.000
+            </li>
+            <li class="inline-flex items-center">
+              <span class="mr-3">2.</span> 00:00.000
+            </li>
+            <li class="inline-flex items-center">
+              <span class="mr-3">3.</span> 00:00.000
+            </li>
+            <li class="inline-flex items-center">
+              <span class="mr-3">4.</span> 00:00.000
+            </li>
+            <li class="inline-flex items-center">
+              <span class="mr-3">5.</span> 00:00.000
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
   </body>
 
   <script type="module">
@@ -17,11 +62,38 @@
 
     createApp({
       setup() {
-        const message = ref("Hello Vue!");
+        const millisecond = ref(0);
+
         return {
-          message,
+          millisecond,
         };
       },
     }).mount("#app");
   </script>
+
+  <style type="text/tailwindcss">
+    body {
+      @apply p-0 m-0 h-dvh w-dvw;
+    }
+
+    button {
+      @apply hover:opacity-70 transition-opacity cursor-pointer;
+    }
+
+    #app {
+      @apply flex flex-col justify-center items-center h-full gap-2;
+    }
+
+    .list {
+      @apply absolute top-full translate-x-1/2 right-1/2 translate-y-4 text-end text-sm font-mono;
+    }
+
+    .actions {
+      @apply flex gap-1 text-xl;
+    }
+
+    .timer {
+      @apply text-2xl text-gray-800 font-mono;
+    }
+  </style>
 </html>
