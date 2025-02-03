@@ -13,40 +13,44 @@
 
   <body>
     <div id="app">
-      <div class="timer">00:00.000</div>
+      <div class="timer">{{formattedTime}}</div>
 
       <div class="relative">
         <div class="actions">
-          <button class="material-symbols-outlined" type="button">
+          <button class="material-symbols-outlined" type="button" @click="stop">
             pause_circle
           </button>
-          <button class="material-symbols-outlined" type="button">
+          <button
+            class="material-symbols-outlined"
+            type="button"
+            @click="start"
+          >
             play_circle
           </button>
-          <button class="material-symbols-outlined" type="button">
+          <button
+            class="material-symbols-outlined"
+            type="button"
+            @click="reset"
+          >
             stop_circle
           </button>
-          <button class="material-symbols-outlined" type="button">
+          <button
+            class="material-symbols-outlined"
+            type="button"
+            @click="record"
+          >
             add_circle
           </button>
         </div>
 
         <div class="list">
-          <ul class="divide-y">
-            <li class="inline-flex items-center">
-              <span class="mr-3">1.</span> 00:00.000
-            </li>
-            <li class="inline-flex items-center">
-              <span class="mr-3">2.</span> 00:00.000
-            </li>
-            <li class="inline-flex items-center">
-              <span class="mr-3">3.</span> 00:00.000
-            </li>
-            <li class="inline-flex items-center">
-              <span class="mr-3">4.</span> 00:00.000
-            </li>
-            <li class="inline-flex items-center">
-              <span class="mr-3">5.</span> 00:00.000
+          <ul v-if="hasRecords" class="divide-y">
+            <li
+              class="inline-flex items-center"
+              v-for="(time,idx) in list"
+              :key="idx"
+            >
+              <span class="mr-3">{{idx+1}}.</span> {{formatTime(time)}}
             </li>
           </ul>
         </div>
@@ -58,14 +62,76 @@
     import {
       createApp,
       ref,
+      watchEffect,
+      computed,
     } from "https://unpkg.com/vue@3/dist/vue.esm-browser.js";
 
     createApp({
       setup() {
         const millisecond = ref(0);
+        const list = ref([]);
+        const hasRecords = computed(() => list.value.length > 0);
+
+        const timerId = ref(null);
+
+        function clearRecords() {
+          list.value = [];
+        }
+
+        function start() {
+          if (timerId.value) return;
+
+          timerId.value = setInterval(() => {
+            millisecond.value += 10;
+          }, 10);
+        }
+
+        function stop() {
+          clearInterval(timerId.value);
+          timerId.value = null;
+        }
+
+        function reset() {
+          stop();
+          clearRecords();
+          millisecond.value = 0;
+        }
+
+        function record() {
+          list.value.push(millisecond.value);
+        }
+
+        function stop5Records() {
+          if (list.value.length === 5) {
+            stop();
+          }
+        }
+
+        function formatTime(milliseconds) {
+          const minutes = Math.floor(milliseconds / 60000);
+          const seconds = Math.floor((milliseconds % 60000) / 1000);
+          const ms = Math.floor((milliseconds % 1000) / 10);
+
+          return `${String(minutes).padStart(2, "0")}:${String(
+            seconds
+          ).padStart(2, "0")}.${String(ms).padStart(2, "0")}`;
+        }
+
+        const formattedTime = computed(() => formatTime(millisecond.value));
+
+        watchEffect(() => {
+          stop5Records();
+        });
 
         return {
-          millisecond,
+          formattedTime,
+          list,
+          hasRecords,
+          start,
+          stop,
+          reset,
+          record,
+          formatTime,
         };
       },
     }).mount("#app");
@@ -85,7 +151,7 @@
     }
 
     .list {
-      @apply absolute top-full translate-x-1/2 right-1/2 translate-y-4 text-end text-sm font-mono;
+      @apply absolute top-full translate-x-1/2 right-1/2 translate-y-4 text-sm font-mono;
     }
 
     .actions {
