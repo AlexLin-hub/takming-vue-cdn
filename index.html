@@ -14,21 +14,47 @@
     <div id="app">
       <div class="relative w-[600px]">
         <div class="todo-input">
-          <input type="text" name="todo" maxlength="30" placeholder="請輸入" />
-          <button type="button">新增</button><button type="button">儲存</button
-          ><button type="button" class="!bg-transparent">取消</button>
+          <input
+            v-model.trim="todoInput"
+            type="text"
+            name="todo"
+            maxlength="30"
+            placeholder="請輸入"
+          />
+          <button
+            v-if="!isEditing"
+            type="button"
+            :disabled="isMaxTodos"
+            @click="createTodo"
+          >
+            新增</button
+          ><button v-if="isEditing" type="button" @click="saveTodo">儲存</button
+          ><button
+            v-if="isEditing"
+            type="button"
+            class="!bg-transparent"
+            @click="cancelEdit"
+          >
+            取消
+          </button>
         </div>
 
         <div class="absolute w-full">
           <ul class="todo-list">
-            <li v-for="i in 5" :key="i" class="todo-item">
+            <li v-for="(todo,idx) in todos" :key="todo.id" class="todo-item">
               <div>
-                <span class="mr-1 font-mono">{{i}}.</span>
-                項目 {{i}}
+                <span class="mr-1 font-mono">{{idx + 1}}.</span>
+                {{todo.text}}
               </div>
               <div class="todo-item-actions material-symbols-outlined">
-                <button type="button">edit</button
-                ><button class="text-green-800" type="button">check</button>
+                <button type="button" @click="editTodo(todo)">edit</button
+                ><button
+                  class="text-green-800"
+                  type="button"
+                  @click="confirmTodo(todo)"
+                >
+                  check
+                </button>
               </div>
             </li>
           </ul>
@@ -41,10 +67,96 @@
     import {
       createApp,
       ref,
+      computed,
     } from "https://unpkg.com/vue@3/dist/vue.esm-browser.js";
 
     createApp({
-      setup() {},
+      setup() {
+        const todos = ref([]);
+        const todoInput = ref("");
+        const isMaxTodos = computed(() => todos.value.length >= 5);
+
+        const isEditing = ref(false);
+        const editingTodo = ref(null);
+
+        function checkInputValid() {
+          return todoInput.value.length > 0;
+        }
+
+        function clearInput() {
+          todoInput.value = "";
+        }
+
+        function createTodo() {
+          if (isMaxTodos.value) return;
+
+          if (!checkInputValid()) {
+            alert("請輸入內容");
+            return;
+          }
+
+          const id = self.crypto.randomUUID();
+          const text = todoInput.value;
+          todos.value.push({
+            id,
+            text,
+          });
+
+          clearInput();
+        }
+
+        function confirmTodo(todo) {
+          const { id, text } = todo;
+          const confirm = window.confirm(`確定完成 [${text}] 嗎？`);
+
+          if (!confirm) return;
+
+          const idx = todos.value.findIndex((t) => t.id === id);
+          todos.value.splice(idx, 1);
+        }
+
+        function editTodo(todo) {
+          isEditing.value = true;
+          editingTodo.value = { ...todo };
+          todoInput.value = editingTodo.value.text;
+        }
+
+        function cancelEdit() {
+          isEditing.value = false;
+          editingTodo.value = null;
+          clearInput();
+        }
+
+        function saveTodo() {
+          if (!checkInputValid()) {
+            alert("請輸入內容");
+            return;
+          }
+
+          const idx = todos.value.findIndex(
+            (t) => t.id === editingTodo.value.id
+          );
+
+          todos.value.splice(idx, 1, {
+            id: editingTodo.value.id,
+            text: todoInput.value,
+          });
+
+          cancelEdit();
+        }
+
+        return {
+          todos,
+          todoInput,
+          isMaxTodos,
+          isEditing,
+          createTodo,
+          confirmTodo,
+          editTodo,
+          saveTodo,
+          cancelEdit,
+        };
+      },
     }).mount("#app");
   </script>
 </html>
