@@ -17,10 +17,16 @@
 
       <div class="relative">
         <div class="actions">
-          <button class="material-symbols-outlined" type="button" @click="stop">
+          <button
+            v-if="isTimerStart"
+            class="material-symbols-outlined"
+            type="button"
+            @click="stop"
+          >
             pause_circle
           </button>
           <button
+            v-if="!isTimerStart && !isMaxRecords"
             class="material-symbols-outlined"
             type="button"
             @click="start"
@@ -28,6 +34,7 @@
             play_circle
           </button>
           <button
+            v-if="!isTimerStart && hasMillisecond"
             class="material-symbols-outlined"
             type="button"
             @click="reset"
@@ -35,6 +42,7 @@
             stop_circle
           </button>
           <button
+            v-if="isTimerStart"
             class="material-symbols-outlined"
             type="button"
             @click="record"
@@ -69,10 +77,14 @@
     createApp({
       setup() {
         const millisecond = ref(0);
+        const hasMillisecond = computed(() => millisecond.value > 0);
+
         const list = ref([]);
         const hasRecords = computed(() => list.value.length > 0);
+        const isMaxRecords = computed(() => list.value.length === 5);
 
         const timerId = ref(null);
+        const isTimerStart = computed(() => timerId.value !== null);
 
         function clearRecords() {
           list.value = [];
@@ -98,11 +110,13 @@
         }
 
         function record() {
+          if (!isTimerStart.value || isMaxRecords.value) return;
+
           list.value.push(millisecond.value);
         }
 
         function stop5Records() {
-          if (list.value.length === 5) {
+          if (isMaxRecords.value) {
             stop();
           }
         }
@@ -127,6 +141,9 @@
           formattedTime,
           list,
           hasRecords,
+          hasMillisecond,
+          isTimerStart,
+          isMaxRecords,
           start,
           stop,
           reset,
