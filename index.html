@@ -1,27 +1,141 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Hello Vue3!</title>
-  </head>
-  <body>
-    <div id="app">{{message}}</div>
-  </body>
 
-  <script type="module">
-    import {
-      createApp,
-      ref,
-    } from "https://unpkg.com/vue@3/dist/vue.esm-browser.js";
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+  <title>TODO List</title>
+</head>
 
-    createApp({
-      setup() {
-        const message = ref("Hello Vue!");
-        return {
-          message,
-        };
-      },
-    }).mount("#app");
-  </script>
+<body>
+  <div id="app">
+    <div class="relative w-[600px]">
+      <div class="todo-input">
+        <input type="text" v-model="text" name="todo" maxlength="30" placeholder="請輸入" />
+        <button type="button" @click="addTodo">新增</button>
+        <button type="button" @click="saveTodos">儲存</button>
+        <button type="button" class="!bg-transparent" @click="cancelEdit">取消</button>
+      </div>
+
+      <!-- Show list if there are any todos -->
+      <div v-if="todos.length > 0" class="absolute w-full">
+        <ul class="todo-list">
+          <li v-for="(todo, index) in todos" :key="index" class="todo-item">
+            <div :class="{ 'line-through text-gray-400': todo.completed }"> <!-- Strike-through if completed -->
+              <span class="mr-1 font-mono">{{ index + 1 }}.</span>
+              {{ todo.text }}
+            </div>
+            <div class="todo-item-actions material-symbols-outlined">
+              <button type="button" @click="editTodo(index)">edit</button>
+              <button class="text-green-800" type="button" @click="checkTodo(index)">check</button>
+              <button class="text-red-600" type="button" @click="cancelTodo(index)">取消</button>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</body>
+
+<script type="module">
+  import {
+    createApp,
+    ref,
+  } from "https://unpkg.com/vue@3/dist/vue.esm-browser.js";
+
+  createApp({
+    setup() {
+      const text = ref(""); // input text for todo
+      const todos = ref([]); // list of todo items
+
+      // Function to add a todo item
+      const addTodo = () => {
+        if (text.value.trim() !== "") {
+          todos.value.push({ text: text.value, completed: false }); // Store todos as objects with text and completed status
+          text.value = ""; // clear the input field
+        }
+      };
+
+      // Function to save todos (you can implement saving logic here)
+      const saveTodos = () => {
+        // Add your save logic here, e.g., saving to localStorage or backend
+        alert("Todos saved!");
+      };
+
+      // Function to cancel edit (clear the input field)
+      const cancelEdit = () => {
+        text.value = ""; // clear the input field
+      };
+
+      // Function to edit todo (you can implement your edit logic here)
+      const editTodo = (index) => {
+        text.value = todos.value[index].text;
+        todos.value.splice(index, 1); // remove item to edit it
+      };
+
+      // Function to mark todo as checked (completed)
+      const checkTodo = (index) => {
+        todos.value[index].completed = !todos.value[index].completed; // Toggle completion
+      };
+
+      // Function to cancel/remove the todo
+      const cancelTodo = (index) => {
+        todos.value.splice(index, 1); // removes the canceled todo item
+      };
+
+      return {
+        text,
+        todos,
+        addTodo,
+        saveTodos,
+        cancelEdit,
+        editTodo,
+        checkTodo,
+        cancelTodo,
+      };
+    },
+  }).mount("#app");
+</script>
+
+<style type="text/tailwindcss">
+  body {
+    @apply p-0 m-0 h-dvh w-dvw font-sans;
+  }
+
+  #app {
+    @apply flex flex-col justify-center items-center h-full gap-2;
+  }
+
+  .todo-input {
+    @apply flex justify-center items-center gap-2 w-full;
+  }
+
+  .todo-list {
+    @apply flex flex-col divide-y divide-gray-300 w-full list-inside mt-3;
+  }
+
+  .todo-item {
+    @apply gap-2 inline-flex items-center justify-between hover:bg-gray-100 transition-colors;
+  }
+
+  .todo-item-actions {
+    @apply inline-flex gap-2;
+  }
+
+  .todo-item-actions > button {
+    @apply bg-transparent text-base;
+  }
+
+  input {
+    @apply flex-1 outline rounded py-2 px-3 focus:outline-gray-400 disabled:opacity-50 disabled:bg-gray-200;
+  }
+
+  button {
+    @apply rounded py-2 px-3 bg-gray-300 text-sm h-full cursor-pointer disabled:opacity-50 disabled:bg-gray-200 disabled:cursor-not-allowed;
+  }
+</style>
+
 </html>
